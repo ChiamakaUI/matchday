@@ -1,0 +1,10 @@
+export { fixtureRoutes } from './fixtures.routes.js';
+export { contestRoutes } from './contests.routes.js';
+export { entryRoutes } from './entries.routes.js';
+export { adminRoutes } from './admin.routes.js';
+export { assistantRoutes } from './ai-assistant.routes.js';
+export { agentRoutes } from './ai-agent.routes.js';
+export { syncRoutes } from './sync.routes.js';
+export { userRoutes } from './users.routes.js';
+export { liveRoutes } from './live.routes.js';
+export { testRoutes } from './test.routes.js';

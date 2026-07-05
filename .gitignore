@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+server/dist/
+ui/.next/
+ui/out/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# PgTyped generated files (regenerated from SQL)
+# Uncomment if you want to track them:
+# server/src/queries/*.generated.ts
+
+# Logs
+*.log
+npm-debug.log*
+
+# Misc
+*.tsbuildinfo

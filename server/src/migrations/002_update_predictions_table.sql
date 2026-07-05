@@ -1,0 +1,1 @@
+ALTER TABLE predictions ADD COLUMN confidence INT NOT NULL DEFAULT 1 CHECK (confidence IN (1, 2, 3));

@@ -1,0 +1,20 @@
+npx tsx src/scripts/setup-txline.ts
+
+◇ injected env (1) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+
+🏟️  TxLINE Setup — mainnet
+   Program: 9ExbZjAapQww1vfcisDmrngPinHTEfpjYRWMunJgcKaA
+   API: https://txline.txodds.com
+   Service Level: 12 (real-time)
+
+Set WALLET_KEYPAIR_JSON or ADMIN_KEYPAIR_JSON in your .env
+chiamakaezemba@Chiamakas-MacBook-Pro server % NETWORK=devnet npx tsx src/scripts/setup-txline.ts
+◇ injected env (1) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+
+🏟️  TxLINE Setup — devnet
+   Program: 6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J
+   API: https://txline-dev.txodds.com
+   Service Level: 1 (60s delay)
+
+Set WALLET_KEYPAIR_JSON or ADMIN_KEYPAIR_JSON in your .env
+chiamakaezemba@Chiamakas-MacBook-Pro server % 
