@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 12px;
+  }
+
+  body {
+    @apply bg-surface-base text-text-primary antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #27272A;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3F3F46;
+  }
+
+  /* Selection */
+  ::selection {
+    background: rgba(245, 166, 35, 0.25);
+    color: #FAFAFA;
+  }
+}
+
+@layer utilities {
+  /* Score display font */
+  .font-score {
+    @apply font-mono font-display font-bold tabular-nums tracking-tight;
+  }
+
+  /* Points with sign */
+  .points-correct {
+    @apply text-correct font-mono font-display font-bold;
+  }
+  .points-wrong {
+    @apply text-wrong font-mono font-display font-bold;
+  }
+  .points-pending {
+    @apply text-text-tertiary font-mono;
+  }
+
+  /* Gold gradient text */
+  .text-gold-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-gold-300 via-gold-400 to-gold-500;
+  }
+
+  /* Subtle glow behind gold elements */
+  .gold-glow {
+    box-shadow: 0 0 40px -8px rgba(245, 166, 35, 0.15);
+  }
+
+  /* Card hover lift */
+  .card-interactive {
+    @apply transition-all duration-150;
+  }
+  .card-interactive:hover {
+    @apply border-border-strong bg-surface-hover;
+  }
+}
