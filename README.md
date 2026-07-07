@@ -45,6 +45,35 @@ matchday/
 └── anchor/          Shared IDL + types for the Solana program
 ```
 
+---
+
+## On-Chain Architecture
+
+```mermaid
+flowchart TD
+    Admin([Admin]) -->|create / lock / settle| CP
+    User([User wallet]) -->|enter_contest| CV
+    User -->|initialize / deposit| AC
+    Agent([Agent keypair]) -->|agent_enter_contest| AV
+
+    subgraph CD["Contest domain"]
+        CP["Contest PDA"]
+        CV["ContestVault PDA"]
+        CP -.->|authority| CV
+    end
+
+    subgraph AD["Agent domain"]
+        AC["AgentConfig PDA"]
+        AV["AgentVault PDA"]
+        AC -.->|authority| AV
+    end
+
+    AV -->|USDC| CV
+    CV -->|rake| TR([Treasury])
+    CV -->|payouts| WN([Winner ATAs])
+```
+
+
 ### Data Flow
 
 ```
