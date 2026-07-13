@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { AuthLayout } from '@/components/layout/auth-layout';
-import { useContests, useUserEntries } from '@/hooks';
-import { formatUsdc, timeUntilDeadline, cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Trophy, Users, Clock, Check, Loader2 } from 'lucide-react';
+import { AuthLayout } from '@/components';
+import { useContests, useUserEntries } from '@/hooks';
+import { formatUsdc, timeUntilDeadline, cn } from '@/lib';
 import type { ContestStatus } from '@/types';
 
 const FILTERS: Array<{ label: string; value: string | undefined }> = [
@@ -67,7 +67,7 @@ export default function ContestsPage() {
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-display font-display font-bold">{contest.name}</p>
+                    <p className="font-display font-bold">{contest.name}</p>
                     <div className="flex items-center gap-4 mt-2 text-sm text-text-secondary">
                       <span className="flex items-center gap-1">
                         <Users className="h-3.5 w-3.5" />

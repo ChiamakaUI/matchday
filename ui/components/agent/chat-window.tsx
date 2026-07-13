@@ -2,9 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
-import { assistantApi } from '@/lib/api';
-import { useAuth } from '@/hooks/use-auth';
-import { cn } from '@/lib/utils';
+import { assistantApi } from "@/lib";
+import { useAuth } from "@/hooks";
+import { cn } from "@/lib";
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -84,7 +84,7 @@ export function ChatWindow() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-white/5 pt-4">
+      <div className="border-t border-border pt-4">
         <div className="flex gap-2 items-end">
           <textarea
             rows={1}
@@ -92,24 +92,25 @@ export function ChatWindow() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKey}
             placeholder="Ask about matches, predictions, odds…"
-            className="flex-1 resize-none rounded-xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-text-primary placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-gold-400 max-h-32"
-            style={{ minHeight: '44px' }}
+            className="flex-1 resize-none rounded-xl border border-border bg-white/5 px-4 py-3 text-sm text-text-primary placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-gold-400 max-h-32"
+            style={{ minHeight: "44px" }}
           />
           <button
             onClick={send}
             disabled={!input.trim() || loading}
             className={cn(
-              'h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-colors',
+              "h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-colors",
               input.trim() && !loading
-                ? 'bg-gold-400 hover:bg-gold-300 text-text-primary'
-                : 'bg-white/5 text-zinc-600 cursor-not-allowed',
+                ? "bg-gold-400 hover:bg-gold-300 text-text-primary"
+                : "bg-white/5 text-zinc-600 cursor-not-allowed",
             )}
           >
             <Send className="h-4 w-4" />
           </button>
         </div>
         <p className="text-[10px] text-zinc-700 mt-2">
-          Responses may take 5–15 seconds while the assistant analyses fixtures and odds.
+          Responses may take 5–15 seconds while the assistant analyses fixtures
+          and odds.
         </p>
       </div>
     </div>
@@ -164,9 +165,12 @@ function EmptyState({ onPrompt }: { onPrompt: (p: string) => void }) {
         <Bot className="h-7 w-7 text-gold-300" />
       </div>
       <div>
-        <p className="text-text-primary font-display font-bold">AI Prediction Assistant</p>
+        <p className="text-text-primary font-display font-bold">
+          AI Prediction Assistant
+        </p>
         <p className="text-zinc-500 text-sm mt-1 max-w-xs">
-          Ask me to help with match predictions, analyse fixtures, or explain scoring rules.
+          Ask me to help with match predictions, analyse fixtures, or explain
+          scoring rules.
         </p>
       </div>
       <div className="flex flex-wrap gap-2 justify-center mt-2">
@@ -174,7 +178,7 @@ function EmptyState({ onPrompt }: { onPrompt: (p: string) => void }) {
           <button
             key={p}
             onClick={() => onPrompt(p)}
-            className="text-xs rounded-full border border-white/10 px-3 py-1.5 text-zinc-400 hover:border-gold-400/40 hover:text-gold-400 transition-colors"
+            className="text-xs rounded-full border border-border px-3 py-1.5 text-zinc-400 hover:border-gold-400/40 hover:text-gold-400 transition-colors"
           >
             {p}
           </button>

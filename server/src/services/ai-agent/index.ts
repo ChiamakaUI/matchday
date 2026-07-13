@@ -1,10 +1,13 @@
-import { getPool } from '../../config/index.js';
-import { evaluateContests, buildPredictions } from './decisions.js';
+import type pg from "pg";
+import { PublicKey } from "@solana/web3.js";
+import { getPool } from "../../config/index.js";
+import { evaluateContests, buildPredictions } from "./decisions.js";
 import {
   getExistingEntry,
   createEntry,
   createPrediction,
-} from '../../queries/entries.generated.js';
+} from "../../queries/entries.generated.js";
+import { agentEnterContestOnChain } from "../program/agent.service.js";
 
 /**
  * Run one full agent cycle for a user.
@@ -29,11 +32,15 @@ export async function runAgentCycle(userId: string): Promise<{
   actions: Array<{ contestId: string; action: string; reasoning: string }>;
 }> {
   const pool = getPool();
-  const actions: Array<{ contestId: string; action: string; reasoning: string }> = [];
+  const actions: Array<{
+    contestId: string;
+    action: string;
+    reasoning: string;
+  }> = [];
 
   // 1. Load agent config
   const { rows: budgetRows } = await pool.query(
-    'SELECT * FROM agent_budgets WHERE user_id = $1 AND is_active = true',
+    "SELECT * FROM agent_budgets WHERE user_id = $1 AND is_active = true",
     [userId],
   );
 
@@ -50,7 +57,7 @@ export async function runAgentCycle(userId: string): Promise<{
   const remaining = totalDeposited - totalSpent;
 
   if (remaining <= 0) {
-    console.log('[Agent] No budget remaining');
+    console.log("[Agent] No budget remaining");
     return { evaluated: 0, entered: 0, skipped: 0, actions: [] };
   }
 
@@ -67,12 +74,12 @@ export async function runAgentCycle(userId: string): Promise<{
   const contestsLeft = maxContests - contestsThisWeek;
 
   if (contestsLeft <= 0) {
-    console.log('[Agent] Weekly contest limit reached');
+    console.log("[Agent] Weekly contest limit reached");
     return { evaluated: 0, entered: 0, skipped: 0, actions: [] };
   }
 
   // 2. Evaluate contests
-  console.log('[Agent] Evaluating open contests...');
+  console.log("[Agent] Evaluating open contests...");
   const evaluations = await evaluateContests(
     Math.min(maxSpend, remaining),
     contestsLeft,
@@ -84,9 +91,9 @@ export async function runAgentCycle(userId: string): Promise<{
       userId,
       budgetId,
       contestId: evaluation.contestId,
-      actionType: 'evaluate_contest',
+      actionType: "evaluate_contest",
       reasoning: evaluation.reasoning,
-      status: 'success',
+      status: "success",
       metadata: { confidence: evaluation.confidence },
     });
   }
@@ -104,7 +111,11 @@ export async function runAgentCycle(userId: string): Promise<{
       if (existing.length > 0) {
         console.log(`[Agent] Already entered contest ${contestId}, skipping`);
         skipped++;
-        actions.push({ contestId, action: 'skipped', reasoning: 'Already entered' });
+        actions.push({
+          contestId,
+          action: "skipped",
+          reasoning: "Already entered",
+        });
         continue;
       }
 
@@ -113,17 +124,23 @@ export async function runAgentCycle(userId: string): Promise<{
       const predictionSet = await buildPredictions(contestId);
 
       if (predictionSet.predictions.length === 0) {
-        console.log(`[Agent] No predictions generated for ${contestId}, skipping`);
+        console.log(
+          `[Agent] No predictions generated for ${contestId}, skipping`,
+        );
         skipped++;
-        actions.push({ contestId, action: 'skipped', reasoning: 'No predictions generated' });
+        actions.push({
+          contestId,
+          action: "skipped",
+          reasoning: "No predictions generated",
+        });
         await logAction(pool, {
           userId,
           budgetId,
           contestId,
-          actionType: 'build_predictions',
+          actionType: "build_predictions",
           reasoning: predictionSet.reasoning,
-          status: 'failed',
-          errorMessage: 'No predictions generated',
+          status: "failed",
+          errorMessage: "No predictions generated",
         });
         continue;
       }
@@ -132,31 +149,52 @@ export async function runAgentCycle(userId: string): Promise<{
         userId,
         budgetId,
         contestId,
-        actionType: 'build_predictions',
+        actionType: "build_predictions",
         reasoning: predictionSet.reasoning,
         predictionData: predictionSet.predictions,
-        status: 'success',
+        status: "success",
         metadata: { totalConfidence: predictionSet.totalConfidence },
       });
 
-      // TODO: Pay entry fee from agent vault (on-chain)
-      // For now, simulate the payment
-      const entryTx = `agent_simulated_${Date.now()}`;
+      // Pay entry fee from agent vault (on-chain)
+      const vaultPda = budget.vault_pda as string | null;
+      if (!vaultPda) {
+        throw new Error("No vault PDA configured for agent budget");
+      }
 
-      await logAction(pool, {
-        userId,
-        budgetId,
-        contestId,
-        actionType: 'payment_sent',
-        amount: evaluation.entryFee,
-        txSignature: entryTx,
-        status: 'success',
-      });
+      let entryTx: string;
+      try {
+        entryTx = await agentEnterContestOnChain(
+          contestId,
+          new PublicKey(vaultPda),
+        );
+
+        await logAction(pool, {
+          userId,
+          budgetId,
+          contestId,
+          actionType: "payment_sent",
+          amount: evaluation.entryFee,
+          txSignature: entryTx,
+          status: "success",
+        });
+      } catch (err) {
+        await logAction(pool, {
+          userId,
+          budgetId,
+          contestId,
+          actionType: "payment_failed",
+          amount: evaluation.entryFee,
+          status: "failed",
+          errorMessage: (err as Error).message,
+        });
+        throw err;
+      }
 
       // Submit entry with predictions
       const client = await pool.connect();
       try {
-        await client.query('BEGIN');
+        await client.query("BEGIN");
 
         const entryRows = await createEntry.run(
           { userId, contestId, entryTx },
@@ -182,25 +220,25 @@ export async function runAgentCycle(userId: string): Promise<{
           [evaluation.entryFee, budgetId],
         );
 
-        await client.query('COMMIT');
+        await client.query("COMMIT");
 
         await logAction(pool, {
           userId,
           budgetId,
           contestId,
           entryId: entry.id,
-          actionType: 'submit_entry',
+          actionType: "submit_entry",
           reasoning: predictionSet.reasoning,
           predictionData: predictionSet.predictions,
           amount: evaluation.entryFee,
           txSignature: entryTx,
-          status: 'success',
+          status: "success",
         });
 
         entered++;
         actions.push({
           contestId,
-          action: 'entered',
+          action: "entered",
           reasoning: predictionSet.reasoning,
         });
 
@@ -208,7 +246,7 @@ export async function runAgentCycle(userId: string): Promise<{
           `[Agent] ✅ Entered contest ${evaluation.contestName} with ${predictionSet.predictions.length} predictions`,
         );
       } catch (err) {
-        await client.query('ROLLBACK');
+        await client.query("ROLLBACK");
         throw err;
       } finally {
         client.release();
@@ -218,7 +256,7 @@ export async function runAgentCycle(userId: string): Promise<{
       skipped++;
       actions.push({
         contestId,
-        action: 'failed',
+        action: "failed",
         reasoning: (err as Error).message,
       });
 
@@ -226,8 +264,8 @@ export async function runAgentCycle(userId: string): Promise<{
         userId,
         budgetId,
         contestId,
-        actionType: 'submit_entry',
-        status: 'failed',
+        actionType: "submit_entry",
+        status: "failed",
         errorMessage: (err as Error).message,
       });
     }
@@ -282,5 +320,3 @@ async function logAction(
     ],
   );
 }
-
-import type pg from 'pg';

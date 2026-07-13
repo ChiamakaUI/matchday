@@ -1,10 +1,10 @@
 'use client';
 
-import { AuthLayout } from '@/components/layout/auth-layout';
-import { useUserEntries } from '@/hooks';
-import { formatPoints, formatDeadline, cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Trophy, Loader2 } from 'lucide-react';
+import { AuthLayout } from '@/components';
+import { useUserEntries } from '@/hooks';
+import { formatPoints, formatDeadline, cn } from '@/lib';
 import type { ContestStatus } from '@/types';
 
 export default function EntriesPage() {
@@ -44,7 +44,7 @@ export default function EntriesPage() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-display font-display font-bold">{formatPoints(entry.totalPoints)}</p>
+                <p className="font-display font-bold">{formatPoints(entry.totalPoints)}</p>
                 {entry.rank && (
                   <p className="text-xs text-text-secondary">#{entry.rank}</p>
                 )}

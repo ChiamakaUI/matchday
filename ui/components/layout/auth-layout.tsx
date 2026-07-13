@@ -2,9 +2,10 @@
 
 import { useEffect, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { Trophy, Home, LayoutGrid, Medal, Bot, MessageSquare, User, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks';
-import { Trophy, Home, LayoutGrid, Medal, Bot, MessageSquare, User, LogOut } from 'lucide-react';
+
 
 const NAV_ITEMS = [
   { href: '/home', label: 'Home', icon: Home },
@@ -35,7 +36,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       <aside className="hidden md:flex w-56 flex-col fixed inset-y-0 left-0 bg-surface-card border-r border-border z-40">
         <div className="p-5">
           <Link href="/home" className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-lg bg-gold-400/15 flex items-center justify-center">
+            <div className="h-7 w-7 rounded-lg flex items-center bg-gold-400/15 justify-center">
               <Trophy className="h-4 w-4 text-gold-300" />
             </div>
             <span className="text-base font-display font-bold tracking-tight">MatchDay</span>

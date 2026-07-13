@@ -1,34 +1,65 @@
-'use client';
+"use client";
 
-import { AuthLayout } from '@/components/layout/auth-layout';
-import { useCurrentUser, useUserEntries, useContests } from '@/hooks';
-import { formatUsdc, formatPoints, timeUntilDeadline, shortenAddress } from '@/lib/utils';
-import Link from 'next/link';
-import { Trophy, MessageSquare, Bot, ArrowRight } from 'lucide-react';
+import Link from "next/link";
+import { Trophy, MessageSquare, Bot, ArrowRight } from "lucide-react";
+import { AuthLayout } from "@/components";
+import { useCurrentUser, useUserEntries, useContests, useAuth } from "@/hooks";
+import {
+  formatUsdc,
+  formatPoints,
+  timeUntilDeadline,
+  shortenAddress,
+} from "@/lib";
+
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 export default function HomePage() {
   const { data: user } = useCurrentUser();
   const { data: entries } = useUserEntries();
-  const { data: contests } = useContests('open');
+  const { data: contests } = useContests("open");
 
-  const activeEntries = entries?.filter((e) => e.contestStatus === 'locked') ?? [];
+  const { getToken } = useAuth();
+  const activeEntries =
+    entries?.filter((e) => e.contestStatus === "locked") ?? [];
   const enteredContestIds = new Set(entries?.map((e) => e.contestId) ?? []);
-  const openContests = contests?.filter((c) => !enteredContestIds.has(c.id)) ?? [];
+  const openContests =
+    contests?.filter((c) => !enteredContestIds.has(c.id)) ?? [];
+
+  const handleFaucet = async () => {
+    const token = await getToken();
+    await fetch(`${API_URL}/test/faucet`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  };
 
   return (
     <AuthLayout>
       {/* Greeting */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-display font-bold">
-          Welcome{user ? `, ${shortenAddress(user.walletAddress)}` : ''}
-        </h1>
-        <p className="text-text-secondary mt-1">Predict. Compete. Win USDC.</p>
+      <div className="mb-8 flex flex-row items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold">
+            Welcome{user ? `, ${shortenAddress(user.walletAddress)}` : ""}
+          </h1>
+          <p className="text-text-secondary mt-1">
+            Predict. Compete. Win USDC.
+          </p>
+        </div>
+        <button
+          className="bg-gold-400 rounded-sm p-1.5 text-sm font-bold font-sans"
+          onClick={handleFaucet}
+        >
+          Get Test USDC
+        </button>
       </div>
 
       {/* Active Entries */}
       {activeEntries.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-lg font-display font-bold mb-3">My Active Entries</h2>
+          <h2 className="text-lg font-display font-bold mb-3">
+            My Active Entries
+          </h2>
           <div className="space-y-2">
             {activeEntries.map((entry) => (
               <Link
@@ -39,7 +70,8 @@ export default function HomePage() {
                 <div>
                   <p className="font-medium">{entry.contestName}</p>
                   <p className="text-sm text-text-secondary">
-                    {formatPoints(entry.totalPoints)} • Rank #{entry.rank ?? '—'}
+                    {formatPoints(entry.totalPoints)} • Rank #
+                    {entry.rank ?? "—"}
                   </p>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-gold-400">
@@ -56,7 +88,10 @@ export default function HomePage() {
       <section className="mb-8">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-display font-bold">Enter a Contest</h2>
-          <Link href="/contests" className="text-sm text-gold-400 hover:text-gold-300">
+          <Link
+            href="/contests"
+            className="text-sm text-gold-400 hover:text-gold-300"
+          >
             View all
           </Link>
         </div>
@@ -77,7 +112,8 @@ export default function HomePage() {
                 <div>
                   <p className="font-medium">{contest.name}</p>
                   <p className="text-sm text-text-secondary">
-                    {formatUsdc(contest.entryFee)} • {timeUntilDeadline(contest.deadline)}
+                    {formatUsdc(contest.entryFee)} •{" "}
+                    {timeUntilDeadline(contest.deadline)}
                   </p>
                 </div>
                 <ArrowRight className="h-4 w-4 text-text-tertiary" />
@@ -97,7 +133,9 @@ export default function HomePage() {
           >
             <MessageSquare className="h-6 w-6 text-gold-400 mb-2" />
             <p className="font-medium">AI Assistant</p>
-            <p className="text-sm text-text-secondary mt-1">Get prediction advice from AI</p>
+            <p className="text-sm text-text-secondary mt-1">
+              Get prediction advice from AI
+            </p>
           </Link>
           <Link
             href="/agent"
@@ -105,7 +143,9 @@ export default function HomePage() {
           >
             <Bot className="h-6 w-6 text-gold-400 mb-2" />
             <p className="font-medium">AI Agent</p>
-            <p className="text-sm text-text-secondary mt-1">Autonomous prediction bot</p>
+            <p className="text-sm text-text-secondary mt-1">
+              Autonomous prediction bot
+            </p>
           </Link>
         </div>
       </section>

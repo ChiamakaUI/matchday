@@ -47,7 +47,7 @@ matchday/
 
 ---
 
-## On-Chain Architecture
+### On-Chain Architecture
 
 ```mermaid
 flowchart TD
@@ -72,7 +72,6 @@ flowchart TD
     CV -->|rake| TR([Treasury])
     CV -->|payouts| WN([Winner ATAs])
 ```
-
 
 ### Data Flow
 

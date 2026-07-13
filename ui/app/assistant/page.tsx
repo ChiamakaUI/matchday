@@ -1,7 +1,6 @@
 "use client";
 
-import { AuthLayout } from "@/components/layout/auth-layout";
-import { ChatWindow } from "@/components/agent/chat-window";
+import { AuthLayout, ChatWindow } from "@/components";
 
 export default function AssistantPage() {
   return (
@@ -15,7 +14,7 @@ export default function AssistantPage() {
             Squad advice, player insights, and strategy — just ask.
           </p>
         </div>
-        <div className="flex-1 rounded-2xl border border-white/8 bg-white/[0.02] p-4 sm:p-6 overflow-hidden min-h-0">
+        <div className="flex-1 rounded-2xl border border-border bg-white/[0.02] p-4 sm:p-6 overflow-hidden min-h-0">
           <ChatWindow />
         </div>
       </div>

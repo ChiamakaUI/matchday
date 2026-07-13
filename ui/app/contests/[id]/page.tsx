@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { AuthLayout } from '@/components/layout/auth-layout';
+import { ArrowLeft, Users, Clock, Trophy, Loader2 } from 'lucide-react';
+import { AuthLayout } from '@/components';
 import { useContest, useContestLeaderboard, useUserEntries, useCurrentUser } from '@/hooks';
 import {
   formatUsdc,
@@ -16,8 +17,8 @@ import {
   isDeadlinePassed,
   shortenAddress,
   cn,
-} from '@/lib/utils';
-import { ArrowLeft, Users, Clock, Trophy, Loader2 } from 'lucide-react';
+} from '@/lib';
+
 
 export default function ContestDetailPage() {
   const { id } = useParams<{ id: string }>();

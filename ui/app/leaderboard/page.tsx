@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { AuthLayout } from '@/components/layout/auth-layout';
-import { useContests, useContestLeaderboard, useCurrentUser } from '@/hooks';
-import { formatPoints, shortenAddress, cn } from '@/lib/utils';
 import { Trophy, Loader2, ChevronDown } from 'lucide-react';
+import { AuthLayout } from '@/components';
+import { useContests, useContestLeaderboard, useCurrentUser } from '@/hooks';
+import { formatPoints, shortenAddress, cn } from '@/lib';
+
 
 export default function LeaderboardPage() {
   const { data: contests } = useContests();
@@ -88,7 +89,7 @@ export default function LeaderboardPage() {
                       {entry.displayName ?? shortenAddress(entry.walletAddress)}
                       {isMe && <span className="ml-2 text-xs text-gold-400">(you)</span>}
                     </td>
-                    <td className="px-5 py-3 text-right font-display font-display font-bold">
+                    <td className="px-5 py-3 text-right font-display font-bold">
                       {formatPoints(entry.totalPoints)}
                     </td>
                   </tr>
