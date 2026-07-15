@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "build": "tsc",
     "migrate": "tsx src/migrations/migrate.ts",
     "start": "node dist/server.js",
     "generate": "pgtyped -c pgtyped.config.json"
