@@ -26,6 +26,7 @@
     "node-cron": "^4.5.0",
     "pg": "^8.22.0",
     "tweetnacl": "^1.0.3",
+    "tsx": "^4.22.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -37,7 +38,6 @@
     "@types/node-cron": "^3.0.11",
     "@types/pg": "^8.20.0",
     "ts-node": "^10.9.2",
-    "tsx": "^4.22.4",
     "tsup": "^8.5.1",
     "typescript": "5.9"
   }
