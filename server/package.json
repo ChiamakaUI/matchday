@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "migrate": "tsx src/migrations/migrate.ts",
-    "start": "node dist/app.js",
+    "start": "node dist/server.cjs",
     "generate": "pgtyped -c pgtyped.config.json"
   },
   "keywords": [],
