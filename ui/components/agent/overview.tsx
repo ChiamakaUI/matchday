@@ -7,8 +7,7 @@ import {
   Check,
 } from 'lucide-react';
 import type { AgentConfig, AgentRule, AgentAction, AgentRuleType } from '@/types';
-import { useAuth } from '@/hooks/use-auth';
-import { formatUsdc, cn } from '@/lib/utils';
+import { formatUsdc, cn } from "@/lib";
 
 // ─── Display helpers ──────────────────────────────────────────────────────────
 
@@ -123,13 +122,13 @@ export function AgentOverview({
   return (
     <div className="space-y-4">
       {/* Status card */}
-      <div className="rounded-2xl border border-white/8 bg-white/[0.02] overflow-hidden">
+      <div className="rounded-2xl border border-border bg-white/[0.02] overflow-hidden">
         <div
           className={cn(
-            'h-0.5 w-full',
+            "h-0.5 w-full",
             budget.isActive
-              ? 'bg-gradient-to-r from-transparent via-gold-400/60 to-transparent'
-              : 'bg-white/5',
+              ? "bg-gradient-to-r from-transparent via-gold-400/60 to-transparent"
+              : "bg-white/5",
           )}
         />
         <div className="p-5">
@@ -137,27 +136,36 @@ export function AgentOverview({
             <div className="flex items-center gap-3">
               <div
                 className={cn(
-                  'h-10 w-10 rounded-xl flex items-center justify-center',
-                  budget.isActive ? 'bg-gold-400/15' : 'bg-white/5',
+                  "h-10 w-10 rounded-xl flex items-center justify-center",
+                  budget.isActive ? "bg-gold-400/15" : "bg-white/5",
                 )}
               >
                 <Bot
-                  className={cn('h-5 w-5', budget.isActive ? 'text-gold-400' : 'text-zinc-600')}
+                  className={cn(
+                    "h-5 w-5",
+                    budget.isActive ? "text-gold-400" : "text-zinc-600",
+                  )}
                 />
               </div>
               <div>
-                <p className="text-sm font-display font-bold text-text-primary">AI Agent</p>
+                <p className="text-sm font-display font-bold text-text-primary">
+                  AI Agent
+                </p>
                 <p
                   className={cn(
-                    'text-xs font-medium',
-                    budget.isActive ? 'text-gold-400' : 'text-zinc-500',
+                    "text-xs font-medium",
+                    budget.isActive ? "text-gold-400" : "text-zinc-500",
                   )}
                 >
-                  {budget.isActive ? 'Active' : 'Paused'}
+                  {budget.isActive ? "Active" : "Paused"}
                 </p>
               </div>
             </div>
-            <button onClick={toggleActive} disabled={toggling} className="shrink-0">
+            <button
+              onClick={toggleActive}
+              disabled={toggling}
+              className="shrink-0"
+            >
               {toggling ? (
                 <Loader2 className="h-8 w-8 text-zinc-500 animate-spin" />
               ) : budget.isActive ? (
@@ -170,10 +178,20 @@ export function AgentOverview({
 
           {/* Budget stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <BudgetStat label="Remaining" value={formatUsdc(remaining)} accent />
-            <BudgetStat label="Deposited" value={formatUsdc(budget.totalDeposited)} />
+            <BudgetStat
+              label="Remaining"
+              value={formatUsdc(remaining)}
+              accent
+            />
+            <BudgetStat
+              label="Deposited"
+              value={formatUsdc(budget.totalDeposited)}
+            />
             <BudgetStat label="Spent" value={formatUsdc(budget.totalSpent)} />
-            <BudgetStat label="Max / Contest" value={formatUsdc(budget.maxSpendPerContest)} />
+            <BudgetStat
+              label="Max / Contest"
+              value={formatUsdc(budget.maxSpendPerContest)}
+            />
           </div>
 
           {/* Weekly progress */}
@@ -182,18 +200,23 @@ export function AgentOverview({
               <span className="text-zinc-500">This week</span>
               <span
                 className={cn(
-                  'font-display font-bold',
-                  contestsThisWeek >= budget.maxContestsPerWeek ? 'text-amber-400' : 'text-zinc-300',
+                  "font-display font-bold",
+                  contestsThisWeek >= budget.maxContestsPerWeek
+                    ? "text-amber-400"
+                    : "text-zinc-300",
                 )}
               >
-                {contestsThisWeek} / {budget.maxContestsPerWeek} contests entered
+                {contestsThisWeek} / {budget.maxContestsPerWeek} contests
+                entered
               </span>
             </div>
             <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
               <div
                 className={cn(
-                  'h-full rounded-full transition-all',
-                  contestsThisWeek >= budget.maxContestsPerWeek ? 'bg-amber-500' : 'bg-gold-400',
+                  "h-full rounded-full transition-all",
+                  contestsThisWeek >= budget.maxContestsPerWeek
+                    ? "bg-amber-500"
+                    : "bg-gold-400",
                 )}
                 style={{
                   width: `${Math.min((contestsThisWeek / budget.maxContestsPerWeek) * 100, 100)}%`,
@@ -208,7 +231,11 @@ export function AgentOverview({
       <DepositSection onDeposit={onDeposit} />
 
       {/* Rules */}
-      <RulesSection rules={rules} onAddRule={onAddRule} onDeleteRule={onDeleteRule} />
+      <RulesSection
+        rules={rules}
+        onAddRule={onAddRule}
+        onDeleteRule={onDeleteRule}
+      />
 
       {/* Activity */}
       <ActivitySection actions={actions} />
@@ -243,14 +270,16 @@ function DepositSection({ onDeposit }: { onDeposit: (amount: number) => Promise<
   };
 
   return (
-    <div className="rounded-2xl border border-white/8 bg-white/[0.02] overflow-hidden">
+    <div className="rounded-2xl border border-border bg-white/[0.02] overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/[0.02] transition-colors"
       >
         <div className="flex items-center gap-2.5">
           <DollarSign className="h-4 w-4 text-zinc-500" />
-          <p className="text-sm font-display font-bold text-text-primary">Fund Agent</p>
+          <p className="text-sm font-display font-bold text-text-primary">
+            Fund Agent
+          </p>
         </div>
         {open ? (
           <ChevronUp className="h-4 w-4 text-zinc-500" />
@@ -260,10 +289,10 @@ function DepositSection({ onDeposit }: { onDeposit: (amount: number) => Promise<
       </button>
 
       {open && (
-        <div className="px-5 pb-5 space-y-4 border-t border-white/5">
+        <div className="px-5 pb-5 space-y-4 border-t border-border">
           <p className="text-xs text-zinc-500 pt-4">
-            Add USDC to your agent vault. The agent draws from this balance to pay contest entry
-            fees.
+            Add USDC to your agent vault. The agent draws from this balance to
+            pay contest entry fees.
           </p>
 
           <div className="grid grid-cols-4 gap-2">
@@ -272,10 +301,10 @@ function DepositSection({ onDeposit }: { onDeposit: (amount: number) => Promise<
                 key={amt}
                 onClick={() => setAmount(amt)}
                 className={cn(
-                  'rounded-xl border py-2 text-sm font-display font-bold transition-colors',
+                  "rounded-xl border py-2 text-sm font-display font-bold transition-colors",
                   amount === amt
-                    ? 'border-gold-400 bg-gold-400/10 text-gold-400'
-                    : 'border-white/8 bg-white/5 text-zinc-400 hover:border-white/20 hover:text-text-primary',
+                    ? "border-gold-400 bg-gold-400/10 text-gold-400"
+                    : "border-border bg-white/5 text-zinc-400 hover:border-border hover:text-text-primary",
                 )}
               >
                 ${amt}
@@ -292,7 +321,7 @@ function DepositSection({ onDeposit }: { onDeposit: (amount: number) => Promise<
               min={1}
               value={amount}
               onChange={(e) => setAmount(Math.max(1, Number(e.target.value)))}
-              className="w-full rounded-xl border border-white/8 bg-white/5 pl-8 pr-16 py-3 text-text-primary font-display font-bold text-sm focus:outline-none focus:ring-1 focus:ring-gold-400"
+              className="w-full rounded-xl border border-border bg-white/5 pl-8 pr-16 py-3 text-text-primary font-display font-bold text-sm focus:outline-none focus:ring-1 focus:ring-gold-400"
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-display font-bold text-zinc-500">
               USDC
@@ -375,16 +404,20 @@ function RulesSection({
   };
 
   return (
-    <div className="rounded-2xl border border-white/8 bg-white/[0.02] overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+    <div className="rounded-2xl border border-border bg-white/[0.02] overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <div className="flex items-center gap-2.5">
           <Shield className="h-4 w-4 text-zinc-500" />
-          <p className="text-sm font-display font-bold text-text-primary">Rules</p>
-          <span className="text-xs font-display font-bold text-zinc-600">{rules.length} active</span>
+          <p className="text-sm font-display font-bold text-text-primary">
+            Rules
+          </p>
+          <span className="text-xs font-display font-bold text-zinc-600">
+            {rules.length} active
+          </span>
         </div>
         <button
           onClick={() => setShowAdd((v) => !v)}
-          className="flex items-center gap-1.5 text-xs font-display font-bold text-gold-400 hover:text-emerald-300 transition-colors"
+          className="flex items-center gap-1.5 text-xs font-display font-bold text-gold-400 hover:text-gold-300 transition-colors"
         >
           <Plus className="h-3.5 w-3.5" />
           Add rule
@@ -392,9 +425,11 @@ function RulesSection({
       </div>
 
       {showAdd && (
-        <div className="px-5 py-4 border-b border-white/5 space-y-3">
+        <div className="px-5 py-4 border-b border-border space-y-3">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-zinc-500">Rule type</label>
+            <label className="text-xs font-medium text-zinc-500">
+              Rule type
+            </label>
             <select
               value={ruleType}
               onChange={(e) => {
@@ -402,7 +437,7 @@ function RulesSection({
                 setRuleType(t);
                 setRuleValue(getDefaultValue(t));
               }}
-              className="w-full rounded-xl border border-white/8 bg-white/5 px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-gold-400"
+              className="w-full rounded-xl border border-border bg-white/5 px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-gold-400"
             >
               {RULE_TYPE_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value} className="bg-zinc-900">
@@ -412,7 +447,11 @@ function RulesSection({
             </select>
           </div>
 
-          <RuleValueInput type={ruleType} value={ruleValue} onChange={setRuleValue} />
+          <RuleValueInput
+            type={ruleType}
+            value={ruleValue}
+            onChange={setRuleValue}
+          />
 
           {err && <p className="text-xs text-wrong">{err}</p>}
 
@@ -422,11 +461,15 @@ function RulesSection({
               disabled={adding}
               className="flex-1 rounded-xl bg-gold-400 hover:bg-gold-300 disabled:opacity-60 py-2.5 text-xs font-display font-bold text-text-primary transition-colors"
             >
-              {adding ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : 'Save rule'}
+              {adding ? (
+                <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+              ) : (
+                "Save rule"
+              )}
             </button>
             <button
               onClick={() => setShowAdd(false)}
-              className="px-4 rounded-xl border border-white/8 text-xs font-medium text-zinc-400 hover:text-text-primary transition-colors"
+              className="px-4 rounded-xl border border-border text-xs font-medium text-zinc-400 hover:text-text-primary transition-colors"
             >
               Cancel
             </button>
@@ -441,13 +484,19 @@ function RulesSection({
       ) : (
         <div className="divide-y divide-white/5">
           {rules.map((rule) => (
-            <div key={rule.id} className="flex items-center justify-between px-5 py-3.5 gap-3">
+            <div
+              key={rule.id}
+              className="flex items-center justify-between px-5 py-3.5 gap-3"
+            >
               <div className="min-w-0">
                 <p className="text-xs font-display font-bold text-zinc-400 uppercase tracking-widest">
                   {RULE_TYPE_LABELS[rule.ruleType] ?? rule.ruleType}
                 </p>
                 <p className="text-sm text-text-primary mt-0.5 capitalize">
-                  {formatRuleValue(rule.ruleType, rule.ruleValue as Record<string, unknown>)}
+                  {formatRuleValue(
+                    rule.ruleType,
+                    rule.ruleValue as Record<string, unknown>,
+                  )}
                 </p>
               </div>
               <button
@@ -504,15 +553,15 @@ function RuleValueInput({
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-zinc-500">Strategy</label>
         <div className="grid grid-cols-3 gap-2">
-          {(['conservative', 'balanced', 'aggressive'] as const).map((s) => (
+          {(["conservative", "balanced", "aggressive"] as const).map((s) => (
             <button
               key={s}
               onClick={() => onChange({ strategy: s })}
               className={cn(
-                'rounded-xl border py-2.5 text-xs font-display font-bold capitalize transition-colors',
+                "rounded-xl border py-2.5 text-xs font-display font-bold capitalize transition-colors",
                 value.strategy === s
-                  ? 'border-gold-400 bg-gold-400/10 text-gold-400'
-                  : 'border-white/8 bg-white/5 text-zinc-400 hover:text-text-primary',
+                  ? "border-gold-400 bg-gold-400/10 text-gold-400"
+                  : "border-border bg-white/5 text-zinc-400 hover:text-text-primary",
               )}
             >
               {s}
@@ -526,22 +575,26 @@ function RuleValueInput({
   if (type === 'risk_level') {
     return (
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-zinc-500">Playing style</label>
+        <label className="text-xs font-medium text-zinc-500">
+          Playing style
+        </label>
         <div className="grid grid-cols-3 gap-2">
-          {(['conservative', 'moderate', 'aggressive'] as const).map((level) => (
-            <button
-              key={level}
-              onClick={() => onChange({ level })}
-              className={cn(
-                'rounded-xl border py-2.5 text-xs font-display font-bold capitalize transition-colors',
-                value.level === level
-                  ? 'border-gold-400 bg-gold-400/10 text-gold-400'
-                  : 'border-white/8 bg-white/5 text-zinc-400 hover:text-text-primary',
-              )}
-            >
-              {level}
-            </button>
-          ))}
+          {(["conservative", "moderate", "aggressive"] as const).map(
+            (level) => (
+              <button
+                key={level}
+                onClick={() => onChange({ level })}
+                className={cn(
+                  "rounded-xl border py-2.5 text-xs font-display font-bold capitalize transition-colors",
+                  value.level === level
+                    ? "border-gold-400 bg-gold-400/10 text-gold-400"
+                    : "border-border bg-white/5 text-zinc-400 hover:text-text-primary",
+                )}
+              >
+                {level}
+              </button>
+            ),
+          )}
         </div>
       </div>
     );
@@ -579,14 +632,16 @@ function RuleValueInput({
               <button
                 key={g}
                 onClick={() => {
-                  const next = on ? selected.filter((s) => s !== g) : [...selected, g];
+                  const next = on
+                    ? selected.filter((s) => s !== g)
+                    : [...selected, g];
                   onChange({ groups: next });
                 }}
                 className={cn(
-                  'rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+                  "rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
                   on
-                    ? 'border-gold-400 bg-gold-400/10 text-gold-400'
-                    : 'border-white/8 bg-white/5 text-zinc-400 hover:text-text-primary',
+                    ? "border-gold-400 bg-gold-400/10 text-gold-400"
+                    : "border-border bg-white/5 text-zinc-400 hover:text-text-primary",
                 )}
               >
                 {g}
@@ -614,7 +669,7 @@ function RuleValueInput({
           min={1}
           value={Number(value[key] ?? 0)}
           onChange={(e) => onChange({ [key]: Number(e.target.value) })}
-          className="w-full rounded-xl border border-white/8 bg-white/5 px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-gold-400"
+          className="w-full rounded-xl border border-border bg-white/5 px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-gold-400"
         />
       </div>
     );
@@ -629,10 +684,12 @@ function ActivitySection({ actions }: { actions: AgentAction[] }) {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
-    <div className="rounded-2xl border border-white/8 bg-white/[0.02] overflow-hidden">
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-white/5">
+    <div className="rounded-2xl border border-border bg-white/[0.02] overflow-hidden">
+      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border">
         <Activity className="h-4 w-4 text-zinc-500" />
-        <p className="text-sm font-display font-bold text-text-primary">Recent Activity</p>
+        <p className="text-sm font-display font-bold text-text-primary">
+          Recent Activity
+        </p>
       </div>
 
       {actions.length === 0 ? (
@@ -642,13 +699,17 @@ function ActivitySection({ actions }: { actions: AgentAction[] }) {
       ) : (
         <div className="divide-y divide-white/5">
           {actions.slice(0, 10).map((action) => {
-            const color = ACTION_COLORS[action.actionType] ?? 'text-zinc-400';
+            const color = ACTION_COLORS[action.actionType] ?? "text-zinc-400";
             const label =
-              ACTION_LABELS[action.actionType] ?? action.actionType.replace(/_/g, ' ');
-            const date = new Date(action.createdAt).toLocaleDateString('en-GB', {
-              day: 'numeric',
-              month: 'short',
-            });
+              ACTION_LABELS[action.actionType] ??
+              action.actionType.replace(/_/g, " ");
+            const date = new Date(action.createdAt).toLocaleDateString(
+              "en-GB",
+              {
+                day: "numeric",
+                month: "short",
+              },
+            );
             const isExpanded = expanded === action.id;
 
             return (
@@ -660,7 +721,14 @@ function ActivitySection({ actions }: { actions: AgentAction[] }) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={cn('text-xs font-display font-bold capitalize', color)}>{label}</span>
+                      <span
+                        className={cn(
+                          "text-xs font-display font-bold capitalize",
+                          color,
+                        )}
+                      >
+                        {label}
+                      </span>
                     </div>
                     {isExpanded && action.reasoning && (
                       <p className="text-xs text-zinc-500 mt-2 leading-relaxed italic">

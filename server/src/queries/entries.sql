@@ -20,7 +20,13 @@ WHERE contest_id = :contestId;
 
 /* @name GetEntriesByUser */
 SELECT e.*, c.name AS contest_name, c.status AS contest_status,
-  c.entry_fee, c.deadline
+  c.entry_fee, c.deadline,
+  (EXISTS (
+    SELECT 1 FROM agent_actions aa
+    WHERE aa.entry_id = e.id
+    AND aa.action_type = 'submit_entry'
+    AND aa.status = 'success'
+  )) AS is_agent_entry
 FROM entries e
 JOIN contests c ON e.contest_id = c.id
 WHERE e.user_id = :userId

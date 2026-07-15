@@ -1,6 +1,6 @@
 import type pg from "pg";
 import { PublicKey } from "@solana/web3.js";
-import { getPool } from "../../config/index.js";
+import { getPool, getConnection, entryReceiptPda, uuidToBytes } from "../../config/index.js";
 import { evaluateContests, buildPredictions } from "./decisions.js";
 import {
   getExistingEntry,
@@ -38,9 +38,12 @@ export async function runAgentCycle(userId: string): Promise<{
     reasoning: string;
   }> = [];
 
-  // 1. Load agent config
+  // 1. Load agent config — join users to get wallet_address
   const { rows: budgetRows } = await pool.query(
-    "SELECT * FROM agent_budgets WHERE user_id = $1 AND is_active = true",
+    `SELECT ab.*, u.wallet_address
+     FROM agent_budgets ab
+     JOIN users u ON u.id = ab.user_id
+     WHERE ab.user_id = $1 AND ab.is_active = true`,
     [userId],
   );
 
@@ -50,6 +53,7 @@ export async function runAgentCycle(userId: string): Promise<{
 
   const budget = budgetRows[0]!;
   const budgetId = budget.id as string;
+  const walletAddress = budget.wallet_address as string;
   const maxSpend = Number(budget.max_spend_per_contest);
   const maxContests = budget.max_contests_per_week as number;
   const totalDeposited = Number(budget.total_deposited);
@@ -156,17 +160,22 @@ export async function runAgentCycle(userId: string): Promise<{
         metadata: { totalConfidence: predictionSet.totalConfidence },
       });
 
-      // Pay entry fee from agent vault (on-chain)
-      const vaultPda = budget.vault_pda as string | null;
-      if (!vaultPda) {
-        throw new Error("No vault PDA configured for agent budget");
+      // Safety check: verify entry receipt doesn't already exist on-chain
+      const connection = getConnection();
+      const receiptPda = entryReceiptPda(uuidToBytes(contestId), new PublicKey(walletAddress));
+      const existingReceipt = await connection.getAccountInfo(receiptPda);
+      if (existingReceipt) {
+        console.log(`[Agent] Entry receipt already exists on-chain for contest ${contestId}, skipping`);
+        skipped++;
+        actions.push({ contestId, action: "skipped", reasoning: "Already entered on-chain" });
+        continue;
       }
-
+      // Pay entry fee from agent vault (on-chain)
       let entryTx: string;
       try {
         entryTx = await agentEnterContestOnChain(
           contestId,
-          new PublicKey(vaultPda),
+          new PublicKey(walletAddress),
         );
 
         await logAction(pool, {
@@ -191,6 +200,15 @@ export async function runAgentCycle(userId: string): Promise<{
         throw err;
       }
 
+      // Record spend immediately after on-chain payment succeeds.
+      // This is outside the DB transaction so it won't be rolled back
+      // if the entry/prediction insert fails — the on-chain payment
+      // is already non-reversible at this point.
+      await pool.query(
+        `UPDATE agent_budgets SET total_spent = total_spent + $1 WHERE id = $2`,
+        [evaluation.entryFee, budgetId],
+      );
+
       // Submit entry with predictions
       const client = await pool.connect();
       try {
@@ -209,16 +227,11 @@ export async function runAgentCycle(userId: string): Promise<{
               fixtureId: p.fixtureId,
               predictionType: p.predictionType,
               predictedValue: p.predictedValue,
+              confidence: Math.round(p.confidence * 100),
             },
             client,
           );
         }
-
-        // Update agent spend
-        await client.query(
-          `UPDATE agent_budgets SET total_spent = total_spent + $1 WHERE id = $2`,
-          [evaluation.entryFee, budgetId],
-        );
 
         await client.query("COMMIT");
 
@@ -233,6 +246,10 @@ export async function runAgentCycle(userId: string): Promise<{
           amount: evaluation.entryFee,
           txSignature: entryTx,
           status: "success",
+          metadata: {
+            total_confidence: predictionSet.totalConfidence,
+            entry_fee: evaluation.entryFee,
+          },
         });
 
         entered++;

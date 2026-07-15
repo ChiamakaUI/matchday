@@ -3,15 +3,12 @@
  *
  * Solana transaction signing via Privy v3 embedded wallet.
  *
- * Pattern (from working Ledgerly reference):
+ * Pattern :
  *   1. Build instruction via Anchor .instruction()
  *   2. Wrap in a VersionedTransaction
  *   3. Serialize and pass to wallet.signAndSendTransaction()
  *   4. Normalize the signature (Privy can return bytes or string)
  *
- * Prerequisites:
- *   Copy your Anchor IDL from backend/target/idl/squadxi.json
- *   to lib/idl/squadxi.json in the frontend.
  */
 
 import {

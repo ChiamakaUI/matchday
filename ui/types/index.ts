@@ -116,6 +116,7 @@ export interface UserEntry {
   contestStatus?: ContestStatus;
   entryFee?: string;
   deadline?: string;
+  isAgentEntry?: boolean;
 }
 
 export interface EntryDetail extends UserEntry {

@@ -15,6 +15,7 @@ const envSchema = z.object({
   TXLINE_BASE_URL: z.string().url().default('https://txline.txodds.com'),
   TXLINE_JWT: z.string().min(1),
   TXLINE_API_TOKEN: z.string().min(1),
+  MINT_AUTHORITY_JSON: z.string().min(1),
 });
 
 export type Env = z.infer<typeof envSchema>;

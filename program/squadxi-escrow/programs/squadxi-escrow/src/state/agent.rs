@@ -30,17 +30,3 @@ pub struct AgentConfig {
     /// Bump of this AgentConfig PDA
     pub bump: u8,                    // 1
 }
-
-// Admin wallet: 6SKwsZJYhho7rMU16ArJs5SPPBQW8Tp8cbLLcf1Gh5gn
-
-// Fetching/creating treasury token account...
-// Treasury ATA: AW6HV9CtdExrDKCsXnVACHBGo5NNjEboWHVgrPJysjBH
-
-// Initializing ProgramConfig...
-
-// ✅ ProgramConfig initialized successfully.
-//   Tx signature:  ARnsfjgxhRi7ytVgZDXX5wHYtns6FSzqxA4i3aKfEc3Pf53Kgzv55Q7YuWoJkc9gHYaburkSeTGxA8tMeQupCYw
-//   Config PDA:    BdZnpeWRfkzC2TYFj22PawZoEmkKpGjChh9UUzjJk1iX
-//   Authority:     6SKwsZJYhho7rMU16ArJs5SPPBQW8Tp8cbLLcf1Gh5gn
-//   Allowed Mint:  7aRYZYEnfR3d6HxA36WokHscxXkHC8gz97umkAmTQjCL (devnet USDC)
-//   Treasury:      AW6HV9CtdExrDKCsXnVACHBGo5NNjEboWHVgrPJysjBH

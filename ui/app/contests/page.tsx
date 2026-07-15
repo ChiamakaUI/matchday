@@ -10,7 +10,7 @@ import type { ContestStatus } from '@/types';
 
 const FILTERS: Array<{ label: string; value: string | undefined }> = [
   { label: 'All', value: undefined },
-  { label: 'Open', value: 'open' },
+  { label: 'Open', value: 'open' }, 
   { label: 'Live', value: 'locked' },
   { label: 'Settled', value: 'settled' },
 ];
@@ -20,7 +20,9 @@ export default function ContestsPage() {
   const { data: contests, isLoading } = useContests(filter);
   const { data: entries } = useUserEntries();
 
-  const enteredMap = new Map(entries?.map((e) => [e.contestId, e.id]) ?? []);
+  const enteredMap = new Map(
+    entries?.map((e) => [e.contestId, { id: e.id, isAgentEntry: e.isAgentEntry }]) ?? [],
+  );
 
   return (
     <AuthLayout>
@@ -56,8 +58,10 @@ export default function ContestsPage() {
       ) : (
         <div className="space-y-3">
           {contests.map((contest) => {
-            const entryId = enteredMap.get(contest.id);
-            const isEntered = !!entryId;
+            const entryInfo = enteredMap.get(contest.id);
+            const isEntered = !!entryInfo;
+            const entryId = entryInfo?.id;
+            const isAgentEntry = entryInfo?.isAgentEntry;
 
             return (
               <Link
@@ -83,7 +87,7 @@ export default function ContestsPage() {
                     {isEntered ? (
                       <span className="inline-flex items-center gap-1 text-sm text-gold-400">
                         <Check className="h-3.5 w-3.5" />
-                        Entered
+                        {isAgentEntry ? 'Entered by Agent' : 'Entered'} 
                       </span>
                     ) : (
                       <span className="text-sm font-medium">

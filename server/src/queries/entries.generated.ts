@@ -148,6 +148,7 @@ export interface IGetEntriesByUserResult {
   entry_fee: string;
   entry_tx: string | null;
   id: string;
+  is_agent_entry: boolean | null;
   rank: number | null;
   total_points: number | null;
   updated_at: Date | null;
@@ -160,13 +161,19 @@ export interface IGetEntriesByUserQuery {
   result: IGetEntriesByUserResult;
 }
 
-const getEntriesByUserIR: any = {"usedParamSet":{"userId":true},"params":[{"name":"userId","required":false,"transform":{"type":"scalar"},"locs":[{"a":162,"b":168}]}],"statement":"SELECT e.*, c.name AS contest_name, c.status AS contest_status,\n  c.entry_fee, c.deadline\nFROM entries e\nJOIN contests c ON e.contest_id = c.id\nWHERE e.user_id = :userId\nORDER BY e.created_at DESC"};
+const getEntriesByUserIR: any = {"usedParamSet":{"userId":true},"params":[{"name":"userId","required":false,"transform":{"type":"scalar"},"locs":[{"a":332,"b":338}]}],"statement":"SELECT e.*, c.name AS contest_name, c.status AS contest_status,\n  c.entry_fee, c.deadline,\n  (EXISTS (\n    SELECT 1 FROM agent_actions aa\n    WHERE aa.entry_id = e.id\n    AND aa.action_type = 'submit_entry'\n    AND aa.status = 'success'\n  )) AS is_agent_entry\nFROM entries e\nJOIN contests c ON e.contest_id = c.id\nWHERE e.user_id = :userId\nORDER BY e.created_at DESC"};
 
 /**
  * Query generated from SQL:
  * ```
  * SELECT e.*, c.name AS contest_name, c.status AS contest_status,
- *   c.entry_fee, c.deadline
+ *   c.entry_fee, c.deadline,
+ *   (EXISTS (
+ *     SELECT 1 FROM agent_actions aa
+ *     WHERE aa.entry_id = e.id
+ *     AND aa.action_type = 'submit_entry'
+ *     AND aa.status = 'success'
+ *   )) AS is_agent_entry
  * FROM entries e
  * JOIN contests c ON e.contest_id = c.id
  * WHERE e.user_id = :userId

@@ -1,14 +1,10 @@
 import { Router } from "express";
-import { mintTo, getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
-import { PublicKey } from "@solana/web3.js";
 import {
   asyncHandler,
   requireAdmin,
   AppError,
-  requireAuth,
 } from "../middleware/index.js";
 import { getPool, camelizeKeys } from "../config/index.js";
-import { getConnection, getAdminKeypair, USDC_MINT } from "../lib/index.js";
 import {
   createContest,
   addContestFixture,
@@ -180,27 +176,5 @@ adminRoutes.post(
       pool,
     );
     res.json(camelizeKeys(rows[0]!));
-  }),
-);
-
-adminRoutes.post(
-  "/test/faucet",
-  requireAuth,
-  asyncHandler(async (req, res) => {
-    const connection = getConnection();
-    const admin = getAdminKeypair();
-    const userWallet = new PublicKey(req.user!.walletAddress);
-
-    const ata = await getOrCreateAssociatedTokenAccount(
-      connection,
-      admin,
-      USDC_MINT,
-      userWallet,
-    );
-
-    // Mint 100 test USDC (6 decimals)
-    await mintTo(connection, admin, USDC_MINT, ata.address, admin, 100_000_000);
-
-    res.json({ success: true, amount: 100, wallet: userWallet.toBase58() });
   }),
 );

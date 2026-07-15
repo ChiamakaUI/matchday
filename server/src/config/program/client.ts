@@ -55,4 +55,10 @@ export function getProgram(): Program<Squadxi> {
   return _program;
 }
 
+export function getMintAuthority(): Keypair {
+  return Keypair.fromSecretKey(
+    Uint8Array.from(JSON.parse(env().MINT_AUTHORITY_JSON)),
+  );
+}
+
 export { TOKEN_PROGRAM_ID };

@@ -35,7 +35,14 @@ export default function EntriesPage() {
               className="flex items-center justify-between bg-surface-card border border-border rounded-xl px-5 py-4 hover:border-border-strong transition-colors"
             >
               <div>
-                <p className="font-medium">{entry.contestName}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium">{entry.contestName}</p>
+                  {entry.isAgentEntry && (
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-display font-bold bg-gold-400/10 text-gold-400">
+                      Agent
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-3 mt-1">
                   <ContestStatusPill status={entry.contestStatus!} />
                   {entry.deadline && (

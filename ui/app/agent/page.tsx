@@ -23,6 +23,7 @@ import {
   signInitializeAgentTx,
   signDepositTx,
   signActivateAgentTx,
+  signDeactivateAgentTx,
 } from "@/lib";
 
 import type { AgentRuleType } from "@/types";
@@ -42,7 +43,13 @@ export default function AgentPage() {
 
   const isConfigured = config?.configured === true;
 
-  const handleToggle = async (active: boolean) => {
+const handleToggle = async (active: boolean) => {
+    if (!solanaWallet) return;
+    if (active) {
+      await signActivateAgentTx(solanaWallet);
+    } else {
+      await signDeactivateAgentTx(solanaWallet);
+    }
     const token = await getToken();
     await agentApi.updateSettings({ isActive: active }, token!);
     await queryClient.invalidateQueries({ queryKey: ["agent"] });

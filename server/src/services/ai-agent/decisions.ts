@@ -1,8 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { env, getPool, camelizeRows } from '../../config/index.js';
-import { listContests } from '../../queries/contests.generated.js';
-import { getFixturesByContest } from '../../queries/fixtures.generated.js';
-import type { PredictionType } from '../../types/index.js';
+import Anthropic from "@anthropic-ai/sdk";
+import { env, getPool, camelizeRows } from "../../config/index.js";
+import { listContests } from "../../queries/contests.generated.js";
+import { getFixturesByContest } from "../../queries/fixtures.generated.js";
+import type { PredictionType } from "../../types/index.js";
 
 const getClient = (() => {
   let client: Anthropic | null = null;
@@ -19,7 +19,7 @@ export interface ContestEvaluation {
   contestName: string;
   shouldEnter: boolean;
   reasoning: string;
-  confidence: number;           // 0-1
+  confidence: number; // 0-1
   entryFee: number;
 }
 
@@ -51,14 +51,18 @@ export async function evaluateContests(
   maxContests: number,
 ): Promise<ContestEvaluation[]> {
   const pool = getPool();
-  const contests = await listContests.run({ status: 'open' }, pool);
+  const contests = await listContests.run({ status: "open" }, pool);
 
+  console.log(`[Agent] Found ${contests.length} open contests`);
   if (contests.length === 0) return [];
 
   // Fetch fixtures for each contest
   const contestsWithFixtures = await Promise.all(
     contests.map(async (c) => {
-      const fixtures = await getFixturesByContest.run({ contestId: c.id }, pool);
+      const fixtures = await getFixturesByContest.run(
+        { contestId: c.id },
+        pool,
+      );
       return {
         id: c.id,
         name: c.name,
@@ -72,13 +76,18 @@ export async function evaluateContests(
   );
 
   // Filter by entry fee budget
-  const affordable = contestsWithFixtures.filter((c) => c.entryFee <= maxEntryFee);
+  const affordable = contestsWithFixtures.filter(
+    (c) => c.entryFee <= maxEntryFee,
+  );
+  console.log(
+    `[Agent] ${affordable.length}/${contestsWithFixtures.length} contests within budget (max ${maxEntryFee})`,
+  );
   if (affordable.length === 0) return [];
 
   const client = getClient();
 
   const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 2048,
     system: `You are an autonomous prediction agent for MatchDay, a World Cup prediction game. You evaluate contests and decide which ones to enter based on the fixtures, entry fees, and competition level.
 
@@ -90,11 +99,13 @@ Factors to consider:
 - Number of fixtures (more fixtures = more prediction opportunities = higher skill edge)
 - Entry fee vs potential payout
 - Current number of entries (fewer entries = better odds)
-- Time until deadline (don't enter if deadline is very close)
-- Your confidence in predicting the specific matchups`,
+- Only skip if the contest deadline has already passed
+- Matches kicking off soon are FINE — predictions can be made right up until kickoff
+- Fewer entries means less competition, which is a positive signal
+- You are an AI and can analyze matches instantly, so time pressure is not a concern`,
     messages: [
       {
-        role: 'user',
+        role: "user",
         content: `Evaluate these contests. Budget: max ${maxEntryFee} USDC per contest, max ${maxContests} contests total. Current time: ${new Date().toISOString()}
 
 ${JSON.stringify(affordable, null, 2)}`,
@@ -103,12 +114,14 @@ ${JSON.stringify(affordable, null, 2)}`,
   });
 
   const text = response.content
-    .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+    .filter((b): b is Anthropic.TextBlock => b.type === "text")
     .map((b) => b.text)
-    .join('');
+    .join("");
+
+  console.log("[Agent] Claude evaluation response:", text);
 
   try {
-    const cleaned = text.replace(/```json\n?|```/g, '').trim();
+    const cleaned = text.replace(/```json\n?|```/g, "").trim();
     const evaluations = JSON.parse(cleaned) as Array<{
       contestId: string;
       shouldEnter: boolean;
@@ -116,22 +129,26 @@ ${JSON.stringify(affordable, null, 2)}`,
       confidence: number;
     }>;
 
-    return evaluations
+    const toEnter = evaluations
       .filter((e) => e.shouldEnter)
-      .slice(0, maxContests)
-      .map((e) => {
-        const contest = affordable.find((c) => c.id === e.contestId);
-        return {
-          contestId: e.contestId,
-          contestName: contest?.name ?? 'Unknown',
-          shouldEnter: true,
-          reasoning: e.reasoning,
-          confidence: e.confidence,
-          entryFee: contest?.entryFee ?? 0,
-        };
-      });
-  } catch {
-    console.error('[Agent] Failed to parse contest evaluation:', text);
+      .slice(0, maxContests);
+    console.log(
+      `[Agent] ${toEnter.length} contests to enter out of ${evaluations.length} evaluated`,
+    );
+
+    return toEnter.map((e) => {
+      const contest = affordable.find((c) => c.id === e.contestId);
+      return {
+        contestId: e.contestId,
+        contestName: contest?.name ?? "Unknown",
+        shouldEnter: true,
+        reasoning: e.reasoning,
+        confidence: e.confidence,
+        entryFee: contest?.entryFee ?? 0,
+      };
+    });
+  } catch (err) {
+    console.error("[Agent] Failed to parse contest evaluation:", text, err);
     return [];
   }
 }
@@ -142,12 +159,14 @@ ${JSON.stringify(affordable, null, 2)}`,
  * Build predictions for a specific contest.
  * Claude analyzes each fixture and generates predictions for all 4 types.
  */
-export async function buildPredictions(contestId: string): Promise<PredictionSet> {
+export async function buildPredictions(
+  contestId: string,
+): Promise<PredictionSet> {
   const pool = getPool();
   const fixtures = await getFixturesByContest.run({ contestId }, pool);
 
   const fixtureData = fixtures
-    .filter((f) => f.status === 'NS')
+    .filter((f) => f.status === "NS")
     .map((f) => ({
       id: f.id,
       homeTeam: f.home_team_name,
@@ -161,14 +180,14 @@ export async function buildPredictions(contestId: string): Promise<PredictionSet
       contestId,
       predictions: [],
       totalConfidence: 0,
-      reasoning: 'No upcoming fixtures to predict.',
+      reasoning: "No upcoming fixtures to predict.",
     };
   }
 
   const client = getClient();
 
   const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 4096,
     system: `You are an autonomous World Cup prediction agent. Analyze each fixture and generate predictions.
 
@@ -200,7 +219,7 @@ Rules:
 - Consider World Cup context: group stage vs knockout, team strength, historical patterns`,
     messages: [
       {
-        role: 'user',
+        role: "user",
         content: `Build predictions for these World Cup fixtures:
 
 ${JSON.stringify(fixtureData, null, 2)}`,
@@ -209,12 +228,12 @@ ${JSON.stringify(fixtureData, null, 2)}`,
   });
 
   const text = response.content
-    .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+    .filter((b): b is Anthropic.TextBlock => b.type === "text")
     .map((b) => b.text)
-    .join('');
+    .join("");
 
   try {
-    const cleaned = text.replace(/```json\n?|```/g, '').trim();
+    const cleaned = text.replace(/```json\n?|```/g, "").trim();
     const result = JSON.parse(cleaned) as {
       reasoning: string;
       predictions: AgentPrediction[];
@@ -222,7 +241,8 @@ ${JSON.stringify(fixtureData, null, 2)}`,
 
     const totalConfidence =
       result.predictions.length > 0
-        ? result.predictions.reduce((sum, p) => sum + p.confidence, 0) / result.predictions.length
+        ? result.predictions.reduce((sum, p) => sum + p.confidence, 0) /
+          result.predictions.length
         : 0;
 
     return {
@@ -232,12 +252,12 @@ ${JSON.stringify(fixtureData, null, 2)}`,
       reasoning: result.reasoning,
     };
   } catch {
-    console.error('[Agent] Failed to parse predictions:', text);
+    console.error("[Agent] Failed to parse predictions:", text);
     return {
       contestId,
       predictions: [],
       totalConfidence: 0,
-      reasoning: 'Failed to generate predictions.',
+      reasoning: "Failed to generate predictions.",
     };
   }
 }

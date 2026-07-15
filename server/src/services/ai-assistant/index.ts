@@ -39,7 +39,9 @@ export async function chat(
 
   const messages: Anthropic.MessageParam[] = historyRows.map((row) => {
     const content = row.tool_calls
-      ? JSON.parse(row.tool_calls as string)
+      ? (typeof row.tool_calls === 'string'
+          ? JSON.parse(row.tool_calls)
+          : row.tool_calls)
       : (row.content as string);
     return {
       role: row.role as 'user' | 'assistant',

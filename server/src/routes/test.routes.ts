@@ -1,12 +1,22 @@
-import { Router } from 'express';
-import { asyncHandler, requireAdmin, AppError } from '../middleware/index.js';
-import { getPool } from '../config/index.js';
-import { addListener, type LiveScoreEvent } from '../services/sse.service.js';
-import { scoreContest } from '../services/scoring.service.js';
+import { Router } from "express";
+import { getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
+import {
+  asyncHandler,
+  AppError,
+  requireAuth,
+} from "../middleware/index.js";
+import {
+  getConnection,
+  getMintAuthority,
+  getPool,
+} from "../config/index.js";
+import { type LiveScoreEvent } from "../services/sse.service.js";
+import { scoreContest } from "../services/scoring.service.js";
+import { USDC_MINT } from "../lib/index.js";
 
 export const testRoutes = Router();
 
-testRoutes.use(requireAdmin);
 
 /**
  * POST /test/simulate-score
@@ -21,7 +31,7 @@ testRoutes.use(requireAdmin);
  * without waiting for real matches.
  */
 testRoutes.post(
-  '/simulate-score',
+  "/simulate-score",
   asyncHandler(async (req, res) => {
     const { fixtureId, homeScore, awayScore, status } = req.body as {
       fixtureId: string;
@@ -31,19 +41,22 @@ testRoutes.post(
     };
 
     if (!fixtureId || homeScore === undefined || awayScore === undefined) {
-      throw new AppError(400, 'fixtureId, homeScore, and awayScore are required');
+      throw new AppError(
+        400,
+        "fixtureId, homeScore, and awayScore are required",
+      );
     }
 
     const pool = getPool();
 
     // 1. Verify fixture exists
     const { rows: fixtureRows } = await pool.query(
-      'SELECT id, txline_fixture_id, status FROM fixtures WHERE id = $1',
+      "SELECT id, txline_fixture_id, status FROM fixtures WHERE id = $1",
       [fixtureId],
     );
-    if (fixtureRows.length === 0) throw new AppError(404, 'Fixture not found');
+    if (fixtureRows.length === 0) throw new AppError(404, "Fixture not found");
 
-    const fixtureStatus = status ?? 'H1';
+    const fixtureStatus = status ?? "H1";
 
     // 2. Update fixture in DB
     await pool.query(
@@ -67,7 +80,7 @@ testRoutes.post(
     };
 
     // Import the notify function directly
-    const { notifyListeners } = await import('../services/sse.service.js');
+    const { notifyListeners } = await import("../services/sse.service.js");
     notifyListeners(event);
 
     // 4. Rescore affected contests
@@ -102,5 +115,33 @@ testRoutes.post(
       rescoredContests,
       sseNotified: true,
     });
+  }),
+);
+
+testRoutes.post(
+  "/faucet",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const connection = getConnection();
+    const mintAuthority = getMintAuthority();
+    const userWallet = new PublicKey(req.user!.walletAddress);
+
+    const ata = await getOrCreateAssociatedTokenAccount(
+      connection,
+      mintAuthority,
+      USDC_MINT,
+      userWallet,
+    );
+
+    await mintTo(
+      connection,
+      mintAuthority,
+      USDC_MINT,
+      ata.address,
+      mintAuthority,
+      100_000_000,
+    );
+
+    res.json({ success: true, amount: 100, wallet: userWallet.toBase58() });
   }),
 );
