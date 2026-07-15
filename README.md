@@ -7,7 +7,7 @@ MatchDay is a real-money prediction game for the 2026 FIFA World Cup. Users make
 An autonomous AI agent evaluates contests, builds its own predictions with reasoning, and competes alongside human players.
 
 🌐 **Live App:** [matchday-predict.netlify.app](https://matchday-predict.netlify.app)
-📹 **Demo Video:** [https://youtu.be/iSyHbAGagw8]
+📹 **Demo Video:** https://youtu.be/iSyHbAGagw8
 
 ---
 
@@ -245,6 +245,7 @@ PRIVY_APP_SECRET=...
 TXLINE_BASE_URL=https://txline.txodds.com
 TXLINE_JWT=...
 TXLINE_API_TOKEN=...
+MINT_AUTHORITY_JSON=[...]
 ```
 
 **Frontend (.env)**
