@@ -6,8 +6,8 @@ MatchDay is a real-money prediction game for the 2026 FIFA World Cup. Users make
 
 An autonomous AI agent evaluates contests, builds its own predictions with reasoning, and competes alongside human players.
 
-🌐 **Live App:** [matchday.vercel.app](https://matchday.vercel.app)
-📹 **Demo Video:** [link]
+🌐 **Live App:** [matchday-predict.netlify.app](https://matchday-predict.netlify.app)
+📹 **Demo Video:** [https://youtu.be/iSyHbAGagw8]
 
 ---
 
@@ -161,6 +161,44 @@ A user who puts 3× on Correct Score and gets it right earns **15 points**. Wron
 - Privy embedded wallets — no browser extension required
 - On-chain contest escrow with trustless settlement
 - Confidence-weighted scoring with negative penalty system
+
+---
+
+## TxLINE Integration
+
+MatchDay uses TxLINE as its sole source of live match data.
+
+### Endpoints Used
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/fixtures/snapshot` | Fetch all World Cup fixtures (teams, kickoff times, groups) |
+| `GET /api/scores/snapshot/{fixtureId}` | Get current score state for a fixture |
+| `GET /api/scores/updates/{fixtureId}` | Poll for score updates |
+| `GET /api/scores/historical/{fixtureId}` | Fetch completed match data for scoring |
+| `GET /api/scores/stat-validation` | Merkle proof verification for score integrity |
+| `GET /api/odds/snapshot/{fixtureId}` | Betting odds used by AI agent for confidence calibration |
+| `SSE /api/scores/stream` | Real-time score stream — powers live prediction resolution |
+| `SSE /api/odds/stream` | Real-time odds stream |
+
+### How TxLINE Powers the Product
+
+**Fixture sync:** A cron job polls TxLINE's fixture snapshot and syncs to PostgreSQL. This populates the contest creation flow — each contest references a set of TxLINE fixtures.
+
+**Live scoring:** During matches, the server connects to TxLINE's SSE score stream. Score updates trigger immediate rescoring of all affected contests and push updates to connected frontends via our own SSE endpoint. Users see predictions flip from "pending" to "correct/wrong" in real time.
+
+**AI agent analysis:** The agent receives fixture data (including odds where available) as context when building predictions. TxLINE odds inform the agent's confidence calibration — identifying value picks where its prediction diverges from market consensus.
+
+**Score verification:** TxLINE's Merkle proof system (`stat-validation` endpoint) provides cryptographic verification of score data, enabling trustless on-chain settlement.
+
+---
+
+## Monetization Path
+
+- **Rake on contest entry fees** — configurable per contest (default 10%), collected automatically at settlement into the platform treasury
+- **Premium AI agent features** — advanced prediction strategies, higher contest limits, priority vault funding
+- **Sponsored contests** — brands fund prize pools for branded prediction contests during major tournaments
+- **Expansion beyond World Cup** — the architecture is competition-agnostic; Champions League, Premier League, and other TxLINE-supported leagues can be added with zero code changes
 
 ---
 
