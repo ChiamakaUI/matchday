@@ -214,8 +214,6 @@ MatchDay uses TxLINE as its sole source of live match data.
 ```bash
 cd server
 npm install
-createdb matchday
-psql matchday < migrations/001_initial.sql
 cp .env.example .env    # Fill in your values
 npm run pgtyped         # Generate typed queries
 npm run dev
@@ -226,7 +224,7 @@ npm run dev
 ```bash
 cd ui
 npm install
-cp .env.example .env    # Fill in NEXT_PUBLIC values
+cp .env.local.example .env.local    # Fill in NEXT_PUBLIC values
 npm run dev
 ```
 
